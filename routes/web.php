@@ -25,6 +25,29 @@ Route::get('/dashboard',['DashboardController','index']);
 */
 
 /*
+Route::prefix('admin/categories')
+        ->as('admin.categories.')
+        ->group(function(){
+            Route::get('/',[CategoriesController::class,'index'])->name('index');
+            Route::get('/create',[CategoriesController::class,'create'])->name('create');
+            Route::post('/create',[CategoriesController::class,'store'])->name('store');
+            Route::get('/{id}/edit',[CategoriesController::class,'edit'])->name('edit');
+            Route::put('/{id}',[CategoriesController::class,'update'])->name('update');
+            Route::delete('/{id}',[CategoriesController::class,'destroy'])->name('destroy');
+        });
+*/
+
+/*
+Route::group([
+    'prefix' => 'admin/categories',
+    'namespace' => 'Admin',
+    'as' => 'admin.categories.'
+], function(){
+    Route::resource('/', 'CategoriesController');
+
+});
+*/
+
 Route::group([
     'prefix' => 'admin/categories',
     'as' => 'admin.categories.'
@@ -38,30 +61,9 @@ Route::group([
     Route::put('/{id}',[CategoriesController::class,'update'])->name('update');
     Route::delete('/{id}',[CategoriesController::class,'destroy'])->name('destroy');
 });
-*/
 
-/*
-Route::prefix('admin/categories')
-        ->as('admin.categories.')
-        ->group(function(){
-            Route::get('/',[CategoriesController::class,'index'])->name('index');
-            Route::get('/create',[CategoriesController::class,'create'])->name('create');
-            Route::post('/create',[CategoriesController::class,'store'])->name('store');
-            Route::get('/{id}/edit',[CategoriesController::class,'edit'])->name('edit');
-            Route::put('/{id}',[CategoriesController::class,'update'])->name('update');
-            Route::delete('/{id}',[CategoriesController::class,'destroy'])->name('destroy');
-        });
-*/
 
 Route::get('/dashboard',[DashboardController::class,'index']);
-
-Route::group([
-    'prefix' => 'admin/categories',
-    'namespace' => 'Admin',
-], function(){
-    Route::resource('', 'CategoriesController');
-
-});
 
 
 

@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{config('app.name')}}</title>
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     
 </head>
 
@@ -23,12 +23,12 @@
                     Navigation Menu
                 </h4>
                 <nav>
-                    <ul class="nav flex-column">
+                    <ul class="nav nav-pills flex-column" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <li class="nav-item">
                             <a href="" class="nav-link">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a href="" class="nav-link">Categories</a>
+                            <a href="{{ route('admin.categories.index') }}" class="nav-link active">Categories</a>
                         </li>
                         <li class="nav-item">
                             <a href="" class="nav-link">Products</a>
@@ -38,23 +38,15 @@
             </aside>
             <main class="col-md-9">
                 <div class="mb-4">
-                    <h3 class="text-primary">@yield('title')</h3>
+                    <h3 class="text-primary">{{ $title ?? 'Defult Title' }}</h3>
                 </div>
-                {{-- Flash Message Start--}}
-                @if(session()->has('success'))
-                <div class="alert alert-success">
 
-                    {{session()->get('success')}}
-                    {{-- {{session(success)}}--}}
+                {{ $slot }}
 
-                </div>
-                @endif
-                {{-- Flash Message End--}}
-                
-                @yield('content')
             </main>
         </div>
     </div>
+    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 </body>
 
 </html>

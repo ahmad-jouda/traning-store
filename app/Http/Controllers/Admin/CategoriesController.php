@@ -89,7 +89,7 @@ class CategoriesController extends Controller
         $category->save();
 
         return redirect()
-                ->route('admin.categories.create')
+                ->route('admin.categories.index')
                 ->with('success', 'Category added.');
     }
 

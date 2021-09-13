@@ -1,6 +1,18 @@
-@extends('layouts.dashboard')
-@section('title', 'Categories List')
-@section('content')
+<x-dashboard-layout title="Categories List">
+    
+<!-- @include('components.alert') -->
+<!-- 
+    :url="URL::current()" === url="{{URL::current()}}"
+ -->
+<!-- 
+<x-alert title="Title" type="success" :url="URL::current()">
+    <x-slot name="actions">
+        <a href="#" class="btn btn-danger">Action Button</a>
+    </x-slot>
+    My message body
+</x-alert> 
+-->
+<x-alert/> <!-- Components هكذا تستدعيها --> 
 
 <div class="table-toolbar">
     <a href="{{ route('admin.categories.create') }}" class="btn btn-info" style="float: right;margin-left: 39px; color: white;">Create<img src="{{asset('img/plus.svg')}}" alt="Create"/></a>
@@ -16,6 +28,7 @@
     </select>
     <button type="submit" class="btn btn-secondary">Search</button>
 </form>
+
 <table class="table">
     <thead>
         <tr>
@@ -38,10 +51,10 @@
             <td>
                 <div class="row">
                     <div class=" col-lg-3 col-sm-6">
-                        <a class="btn btn-sm btn-dark" href="{{ route('admin.categories.edit', $category->id )}}">Edit</a>
+                        <a class="btn btn-sm btn-dark" href="{{ route('admin.categories.edit', [$category->id]) }}">Edit</a>
                     </div>
                     <div class=" col-lg-3 col-sm-6">
-                        <form action="{{route('admin.categories.destroy', $category->id )}}" method="post">
+                        <form action="{{route('admin.categories.destroy', [$category->id] )}}" method="post">
                             @CSRF
                             @method('delete')
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -52,4 +65,4 @@
         @endforeach
     </tbody>
 </table>
-@endsection
+</x-dashboard-layout>
