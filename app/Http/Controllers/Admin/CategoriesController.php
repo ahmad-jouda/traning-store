@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Rules\WordsFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 class CategoriesController extends Controller
 {
@@ -77,6 +81,85 @@ class CategoriesController extends Controller
      */
     public function store(Request $request)
     {
+        /** Validation Start*/
+
+        /* Method 1
+        $this->validate($request,[
+        'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+        'description' => 'nullable|min:5',
+        'parent_id' => [
+            'nullable',
+            'exsists:categories,id'
+        ],
+        'image' => [
+            'nullable',
+            'image',
+            'mimes:jpg,png,jpeg,gif,svg',
+            'max:1048576',
+            // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+            'dimensions:min_width=100,min_height=100'
+        ],
+        'status' => 'required|in:active,inactive',
+        ]);*/
+
+        /* Method 2 
+        $Validator = Validator::make($request->all(),[
+            'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+            'description' => 'nullable|min:5',
+            'parent_id' => [
+                'nullable',
+                'exsists:categories,id'
+            ],
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,png,jpeg,gif,svg',
+                'max:1048576',
+                // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                'dimensions:min_width=100,min_height=100'
+            ],
+
+            'status' => 'required|in:active,inactive',
+            
+        ]);*/
+
+        /* Method 3 
+        $request->validate([
+            'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+                'description' => 'nullable|min:5',
+                'parent_id' => [
+                    'nullable',
+                    'exsists:categories,id'
+                ],
+                'image' => [
+                    'nullable',
+                    'image',
+                    'mimes:jpg,png,jpeg,gif,svg',
+                    'max:1048576',
+                    // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                    'dimensions:min_width=100,min_height=100'
+                ],
+
+                'status' => 'required|in:active,inactive',
+        ]); */
+
+        // $Validator = Validator::make($request->all());
+        // $Validator = Validator::make($request->post());
+        // $Validator = Validator::make($request->only(['name', 'status']));
+        // $Validator = Validator::make($request->except(['name', 'status']));
+
+        //الدوال الي تحت بتنحط بعد قواعد الفالداشن
+        // $fails = $Validator->fails(); اذا لم تنطبق شروط ال validator يعطيك true
+        // $failed = $Validator->failed(); هنا يعطيك true في حال لم تنطبق شروط ال validator  ويعطيك اين الخطأ
+        // $errors = $Validator->errors(); هنا اذا حدث خطأ يعطيك رسالة الخطأ والحقل الذي  حدث فيه الخطأ
+        
+        // $clean = $Validator->validated(); في حال تمت العملية
+        // $clean = $Validator->validate();
+
+        $this->checkRequest($request); //function خاصة بها تحت
+
+        /** Validation End*/
+
         $category = new Category();
 
         // $category->name = $request->name;
@@ -102,11 +185,11 @@ class CategoriesController extends Controller
     public function show($id)
     {
         /*
-        $category = Category::findOrFail($id);
+            $category = Category::findOrFail($id);
 
-        return view('admin.categories.show', [
-            'category' => $category,
-        ]);
+            return view('admin.categories.show', [
+                'category' => $category,
+            ]);
         */
     }
 
@@ -118,13 +201,15 @@ class CategoriesController extends Controller
      */
     public function edit($id)
     {
-        // $category = Category::where('id', '=', $id)->first();
         
+        /* $category = Category::where('id', '=', $id)->first();
+            if($category == null){
+            abort(404);
+        }*/
+
         $category = Category::findOrFail($id);
 
-        // if($category == null){
-        //     abort(404);
-        // }
+        
 
         $parents = Category::where('id', '<>', $id)
         ->orderBy('name', 'asc')->get();
@@ -143,8 +228,33 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(CategoryRequest $request, $id)
     {
+        //ملاحظة : هنا استخدمنا ال customRequest
+
+        /*$request->validate([
+            'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+                'description' => 'nullable|min:5',
+                'parent_id' => [
+                    'nullable',
+                    'exsists:categories,id'
+                ],
+                'image' => [
+                    'nullable',
+                    'image',
+                    'mimes:jpg,png,jpeg,gif,svg',
+                    'max:1048576',
+                    // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                    'dimensions:min_width=100,min_height=100'
+                ],
+
+                'status' => 'required|in:active,inactive',
+        ]);*/
+
+        /*  هنا استخدمنا validation عن طريق funtion 
+        $this->checkRequest($request, $id);
+        */
+
         $category = Category::findOrFail($id);
 
         $category->name = $request->name;
@@ -168,12 +278,12 @@ class CategoriesController extends Controller
      */
     public function destroy($id)
     {
-        // Method 1
-        // $category = Category::findOrFail($id);
-        // $category->delete();
+        /* Method 1
+        $category = Category::findOrFail($id);
+        $category->delete();*/
 
-        // Method 2
-        // $category = Category::where('id', '=', $id)->delete();
+        /* Method 2
+        $category = Category::where('id', '=', $id)->delete();*/
 
         // Method 3 
         Category::destroy($id);
@@ -181,5 +291,60 @@ class CategoriesController extends Controller
         return redirect()
                 ->route('admin.categories.index')
                 ->with('success', 'Category deleted.');
+    }
+
+    protected function checkRequest(Request $request, $id= 0)
+    {
+        return $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+                /* Method 1 
+                    "unique:categories,name,$id", id حتى يتسثنيها في حالة التعديل
+                */
+                /* Method 2 
+                (new Unique('categories', 'name'))->ignore($id),
+                */
+                /** Method 3 */
+                Rule::unique('categories', 'name')->ignore($id),
+
+            ],
+            'description' => [
+                'nullable', 
+                'min:5', 
+                /* Method 1
+                function($attribute, $value, $fail){
+                    if (stripos($value, 'laravel') !== false){
+                        $fail('You can not use the word "laravel"!');
+                    }
+                }
+                */
+                /* Method 2
+                 new WordsFilter(['php','laravel']) by Rule Class
+                */
+                /** Method 3 */
+                'filter:laravel,php', //by AppServiceProvider
+            ],
+            'parent_id' => [
+                'nullable',
+                'exists:categories,id'
+            ],
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,png,jpeg,gif,svg',
+                'max:1048576',
+                // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                'dimensions:min_width=100,min_height=100'
+            ],
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
+        ],[ // custom message
+            'name.required' => 'هذا الحقل مطلوب :attribute',
+        ]);
     }
 }
