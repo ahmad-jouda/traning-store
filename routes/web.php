@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoriesController;
+use App\Http\Controllers\Admin\TagsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +49,7 @@ Route::group([
 
 });
 */
+Route::get('/dashboard',[DashboardController::class,'index']);
 
 Route::group([
     'prefix' => 'admin/categories',
@@ -62,8 +65,37 @@ Route::group([
     Route::delete('/{id}',[CategoriesController::class,'destroy'])->name('destroy');
 });
 
+Route::get('admin/tags/{id}/products',[TagsController::class,'products']);
 
-Route::get('/dashboard',[DashboardController::class,'index']);
+Route::get('admin/users/{id}',[UserController::class,'show'])->name('admin.users.show');
+
+/* Regular Expressions 
+    لبحث عن كلمة أو رقم معين
+    ^ يبدأ بالرقم الي بعده
+    $ ينتهي بالرقم الي قبله
+    (\d{7})$ يكون بعد 059 سبع أرقام ولا يوجد بعد السبع ارقام شي
+    (059|056) يبحث عن الرقم هاد أو هاد
+    [0-9] الارقام تكون من 0 الي 9
+    {1,7} اقل شيء يكون رقم واحد واكثر شيء يكون رقم 7
+    \- يكون الرقم بينه وبين المقدمة سلاش
+    \-? موجودة أو غير موجودة مو مشكلة
+    [a-zA-Z0-9] ممكن يكون الارقام و أحرف كبيرة و أحرف صغيرة
+    \s_\.  يكون مسافة بينهم أو أندر سكور أو نقطة لازم تحط باك سلاش
+
+    Route::get('regexp', function(){
+        $test = '059-7101386,059-9487421,059-9462733';
+        $exp = '/^(059|056)\-?([0-9]{7})$/'; لرقم واحد
+        $exp = '/(059|056)\-?([0-9]{7})/';
+
+        $email = 'name.last-name_12@domain.com';
+        $pattern = '/^[a-zA-Z0-9]+[a-zA-Z0-9\.\-_]*@[a-zA-Z0-9]+[a-zA-Z0-9\.\-]*[a-zA-Z]+$/';
+
+        preg_match($exp, $test, $matches); لرقم واحد
+        preg_match_all($exp, $test, $matches); لعدة أرقام
+        preg_match($pattern, $email, $matches);
+        dd($matches);
+    });
+*/
 
 
 

@@ -22,32 +22,42 @@ class CategoriesController extends Controller
     {
         $categories = Category::when($request->name, function($query, $value){
             $query->where(function($query) use ($value){
-                $query->where('name', 'LIKE', '%{$value}%')
-                ->orWhere('description', 'LIKE', '%{$value}%');
+                $query->where('categories.name', 'LIKE', '%{$value}%')
+                ->orWhere('categories.description', 'LIKE', '%{$value}%');
             });
         })
         ->when($request->parent_id, function($query, $value){
-            $query->where('parent_id', 'LIKE', $value);
+            $query->where('categories.parent_id', 'LIKE', $value);
         })
-        // الي تحت حتى لا يظهر في الجدول id يظهر اسم ال category
-        ->leftjoin('categories as parents', 'parents.id', '=', 'categories.parent_id')
-        ->select([
-            'categories.*',
-            'parents.name as parent_name',
-        ])
+
+        /* 
+            الي تحت حتى لا يظهر في الجدول id يظهر اسم ال category
+            //نعملت بطريقة Relationships
+            ->leftjoin('categories as parents', 'parents.id', '=', 'categories.parent_id')
+            ->select([
+                'categories.*',
+                'parents.name as parent_name',
+            ])
+
+        */
+
+        // Eager loading Relationships
+        ->with('parent') //حتى لا يحدث لودنق
         ->get();
 
-        // $query = Category::query();
-        // if ($request->name){
-        //     $query->where(function($query) use ($request){
-        //         $query->where('name', 'LIKE', '%{$request->name}%')
-        //         ->orWhere('description', 'LIKE', '%{$request->description}%');
-        //     });
-        // }
-        // if ($request->parent_id){
-        //     $query->where('parent_id', 'LIKE', $request->parent_id);
-        // }
-        // $categories = $query->get();
+        /*
+            $query = Category::query();
+            if ($request->name){
+                $query->where(function($query) use ($request){
+                    $query->where('name', 'LIKE', '%{$request->name}%')
+                    ->orWhere('description', 'LIKE', '%{$request->description}%');
+                });
+            }
+            if ($request->parent_id){
+                $query->where('parent_id', 'LIKE', $request->parent_id);
+            }
+            $categories = $query->get();
+        */
 
         $parents = Category::orderBy('name', 'asc')->get();
 
@@ -84,26 +94,7 @@ class CategoriesController extends Controller
         /** Validation Start*/
 
         /* Method 1
-        $this->validate($request,[
-        'name' => 'required|alpha|max:255|min:2|unique:categories,name',
-        'description' => 'nullable|min:5',
-        'parent_id' => [
-            'nullable',
-            'exsists:categories,id'
-        ],
-        'image' => [
-            'nullable',
-            'image',
-            'mimes:jpg,png,jpeg,gif,svg',
-            'max:1048576',
-            // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
-            'dimensions:min_width=100,min_height=100'
-        ],
-        'status' => 'required|in:active,inactive',
-        ]);*/
-
-        /* Method 2 
-        $Validator = Validator::make($request->all(),[
+            $this->validate($request,[
             'name' => 'required|alpha|max:255|min:2|unique:categories,name',
             'description' => 'nullable|min:5',
             'parent_id' => [
@@ -118,14 +109,13 @@ class CategoriesController extends Controller
                 // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
                 'dimensions:min_width=100,min_height=100'
             ],
-
             'status' => 'required|in:active,inactive',
-            
-        ]);*/
+            ]);
+        */
 
-        /* Method 3 
-        $request->validate([
-            'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+        /* Method 2 
+            $Validator = Validator::make($request->all(),[
+                'name' => 'required|alpha|max:255|min:2|unique:categories,name',
                 'description' => 'nullable|min:5',
                 'parent_id' => [
                     'nullable',
@@ -141,23 +131,48 @@ class CategoriesController extends Controller
                 ],
 
                 'status' => 'required|in:active,inactive',
-        ]); */
+                
+            ]);
+        */
 
-        // $Validator = Validator::make($request->all());
-        // $Validator = Validator::make($request->post());
-        // $Validator = Validator::make($request->only(['name', 'status']));
-        // $Validator = Validator::make($request->except(['name', 'status']));
+        /* Method 3 
+            $request->validate([
+                'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+                    'description' => 'nullable|min:5',
+                    'parent_id' => [
+                        'nullable',
+                        'exsists:categories,id'
+                    ],
+                    'image' => [
+                        'nullable',
+                        'image',
+                        'mimes:jpg,png,jpeg,gif,svg',
+                        'max:1048576',
+                        // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                        'dimensions:min_width=100,min_height=100'
+                    ],
 
-        //الدوال الي تحت بتنحط بعد قواعد الفالداشن
-        // $fails = $Validator->fails(); اذا لم تنطبق شروط ال validator يعطيك true
-        // $failed = $Validator->failed(); هنا يعطيك true في حال لم تنطبق شروط ال validator  ويعطيك اين الخطأ
-        // $errors = $Validator->errors(); هنا اذا حدث خطأ يعطيك رسالة الخطأ والحقل الذي  حدث فيه الخطأ
+                    'status' => 'required|in:active,inactive',
+            ]); 
+        */
+
+        /*
+            $Validator = Validator::make($request->all());
+            $Validator = Validator::make($request->post());
+            $Validator = Validator::make($request->only(['name', 'status']));
+            $Validator = Validator::make($request->except(['name', 'status']));
+
+            الدوال الي تحت بتنحط بعد قواعد الفالداشن
+            $fails = $Validator->fails(); اذا لم تنطبق شروط ال validator يعطيك true
+            $failed = $Validator->failed(); هنا يعطيك true في حال لم تنطبق شروط ال validator  ويعطيك اين الخطأ
+            $errors = $Validator->errors(); هنا اذا حدث خطأ يعطيك رسالة الخطأ والحقل الذي  حدث فيه الخطأ
+            
+            $clean = $Validator->validated(); في حال تمت العملية
+            $clean = $Validator->validate();
+
+            $this->checkRequest($request); //function خاصة بها تحت
+        */
         
-        // $clean = $Validator->validated(); في حال تمت العملية
-        // $clean = $Validator->validate();
-
-        $this->checkRequest($request); //function خاصة بها تحت
-
         /** Validation End*/
 
         $category = new Category();
@@ -202,10 +217,12 @@ class CategoriesController extends Controller
     public function edit($id)
     {
         
-        /* $category = Category::where('id', '=', $id)->first();
-            if($category == null){
-            abort(404);
-        }*/
+        /* 
+            $category = Category::where('id', '=', $id)->first();
+                if($category == null){
+                abort(404);
+            }
+        */
 
         $category = Category::findOrFail($id);
 
@@ -232,27 +249,30 @@ class CategoriesController extends Controller
     {
         //ملاحظة : هنا استخدمنا ال customRequest
 
-        /*$request->validate([
-            'name' => 'required|alpha|max:255|min:2|unique:categories,name',
-                'description' => 'nullable|min:5',
-                'parent_id' => [
-                    'nullable',
-                    'exsists:categories,id'
-                ],
-                'image' => [
-                    'nullable',
-                    'image',
-                    'mimes:jpg,png,jpeg,gif,svg',
-                    'max:1048576',
-                    // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
-                    'dimensions:min_width=100,min_height=100'
-                ],
+        /*
+            $request->validate([
+                'name' => 'required|alpha|max:255|min:2|unique:categories,name',
+                    'description' => 'nullable|min:5',
+                    'parent_id' => [
+                        'nullable',
+                        'exsists:categories,id'
+                    ],
+                    'image' => [
+                        'nullable',
+                        'image',
+                        'mimes:jpg,png,jpeg,gif,svg',
+                        'max:1048576',
+                        // 'dimensions:min_width=100,min_height=100,max_width=1000,max_height=1000'
+                        'dimensions:min_width=100,min_height=100'
+                    ],
 
-                'status' => 'required|in:active,inactive',
-        ]);*/
+                    'status' => 'required|in:active,inactive',
+            ]);
+        */
 
-        /*  هنا استخدمنا validation عن طريق funtion 
-        $this->checkRequest($request, $id);
+        /*  
+            هنا استخدمنا validation عن طريق funtion 
+            $this->checkRequest($request, $id);
         */
 
         $category = Category::findOrFail($id);
@@ -279,12 +299,12 @@ class CategoriesController extends Controller
     public function destroy($id)
     {
         /* Method 1
-        $category = Category::findOrFail($id);
-        $category->delete();*/
-
+            $category = Category::findOrFail($id);
+            $category->delete();
+        */
         /* Method 2
-        $category = Category::where('id', '=', $id)->delete();*/
-
+            $category = Category::where('id', '=', $id)->delete();
+        */
         // Method 3 
         Category::destroy($id);
 
@@ -305,7 +325,7 @@ class CategoriesController extends Controller
                     "unique:categories,name,$id", id حتى يتسثنيها في حالة التعديل
                 */
                 /* Method 2 
-                (new Unique('categories', 'name'))->ignore($id),
+                    (new Unique('categories', 'name'))->ignore($id),
                 */
                 /** Method 3 */
                 Rule::unique('categories', 'name')->ignore($id),
@@ -315,11 +335,11 @@ class CategoriesController extends Controller
                 'nullable', 
                 'min:5', 
                 /* Method 1
-                function($attribute, $value, $fail){
-                    if (stripos($value, 'laravel') !== false){
-                        $fail('You can not use the word "laravel"!');
+                    function($attribute, $value, $fail){
+                        if (stripos($value, 'laravel') !== false){
+                            $fail('You can not use the word "laravel"!');
+                        }
                     }
-                }
                 */
                 /* Method 2
                  new WordsFilter(['php','laravel']) by Rule Class

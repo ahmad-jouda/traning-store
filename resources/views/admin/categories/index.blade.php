@@ -34,7 +34,7 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Parent ID</th>
+                <th>Parent Name</th>
                 <th>Created At</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -45,7 +45,7 @@
             <tr>
                 <td>{{ $category->id }}</td>
                 <td>{{ $category->name }}</td>
-                <td>{{ $category->parent_name }}</td>
+                <td>{{ $category->parent->name }}</td>
                 <td>{{ $category->created_at }}</td>
                 <td>{{ $category->status }}</td>
                 <td>
